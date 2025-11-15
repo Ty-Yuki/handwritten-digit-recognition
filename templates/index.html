@@ -1,0 +1,110 @@
+<html>
+  <body>
+    <h1 style="margin-top:20px; margin-bottom:30px; font-size:2em; text-align:center;">
+      手書き数字認識
+    </h1>
+    <div style="display:flex; align-items:flex-start;">
+      <!-- 左側：手書きキャンバス -->
+      <div style="margin-left:40px; margin-top:100px;">
+        <div style="font-size:1.2em; margin-bottom:10px; color:#333; text-align:center;">
+          数字を書いてください (0～9)
+        </div>
+        <canvas
+          id="canvas"
+          width="280"
+          height="280"
+          style="border:2px solid black; margin-bottom:20px;"
+        ></canvas>
+        <br />
+        <button
+          onclick="clearCanvas()"
+          style="font-size:1.2em; padding:10px 24px;"
+        >
+          消去
+        </button>
+        <button
+          onclick="sendImage()"
+          style="font-size:1.2em; padding:10px 76px;"
+        >
+          予測
+        </button>
+        <div id="result" style="font-size:2em; margin:20px 0 0 0;"></div>
+      </div>
+      <!-- 右側：CNN画像と活性化画像 -->
+      <div style="margin-left:100px; margin-right:100px; min-width:320px; max-width:80vw;">
+        <img
+          src="/static/cnn.png"
+          style="width:100%; max-width:1000px; margin-bottom:10px;"
+        />
+        <div
+          id="activations"
+          style="display:flex; align-items:center; margin-top:20px; margin-left:20px;"
+        ></div>
+      </div>
+    </div>
+    <script>
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d');
+      ctx.lineWidth = 20;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.strokeStyle = 'white';
+      ctx.fillStyle = 'black';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      let drawing = false;
+      canvas.onmousedown = e => {
+        drawing = true;
+        ctx.beginPath();
+      };
+      canvas.onmouseup = e => (drawing = false);
+      canvas.onmousemove = e => {
+        if (drawing) {
+          ctx.lineTo(e.offsetX, e.offsetY);
+          ctx.stroke();
+        }
+      };
+
+      function clearCanvas() {
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      }
+
+      async function sendImage() {
+        const dataURL = canvas.toDataURL('image/png');
+        const res = await fetch('/predict', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ image: dataURL })
+        });
+        const result = await res.json();
+        document.getElementById('result').innerHTML = '予測: ' + result.pred;
+
+        const cnnImg = document.querySelector('img[src="/static/cnn.png"]');
+        let cnnWidth = cnnImg ? cnnImg.clientWidth : 600;
+        let imgCount = result.activation_imgs.length;
+        let actImgHeight = Math.floor(cnnWidth / imgCount * 0.95);
+
+        let html = '';
+        for (let i = 0; i < imgCount; i++) {
+          const act = result.activation_imgs[i];
+          html += `<div style="text-align:center;">
+            <img src="data:image/png;base64,${act.img}" style="height:${actImgHeight}px; object-fit:contain;"/>
+          </div>`;
+          if (i < imgCount - 1) {
+            html += `<div style="font-size:${Math.floor(actImgHeight/5)}px; margin:0 8px;">→</div>`;
+          }
+        }
+        document.getElementById('activations').innerHTML = html;
+      }
+
+      window.onload = () => {
+        clearCanvas();
+        sendImage();
+      };
+    </script>
+    <img
+      src="/static/logo.png"
+      style="position:fixed; right:20px; bottom:20px; width:100px; z-index:100;"
+    />
+  </body>
+</html>
