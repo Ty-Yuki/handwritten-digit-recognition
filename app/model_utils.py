@@ -15,10 +15,15 @@ def build_model() -> Model:
     model = models.Sequential(
         [
             layers.Conv2D(
-                32, (3, 3), activation="relu", input_shape=(28, 28, 1), name="conv1"
+                32,
+                (3, 3),
+                activation="relu",
+                padding="same",
+                input_shape=(28, 28, 1),
+                name="conv1",
             ),
             layers.MaxPooling2D((2, 2), name="pool1"),
-            layers.Conv2D(64, (3, 3), activation="relu", name="conv2"),
+            layers.Conv2D(64, (3, 3), activation="relu", padding="same", name="conv2"),
             layers.MaxPooling2D((2, 2), name="pool2"),
             layers.Flatten(name="flatten"),
             layers.Dense(64, activation="relu", name="dense1"),

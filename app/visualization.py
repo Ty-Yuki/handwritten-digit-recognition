@@ -25,11 +25,11 @@ def visualize_activations(
     layer_names = [
         l.name
         for l in model.layers
-        if any(key in l.name for key in ("conv", "pool", "dense", "output"))
+        if any(key in l.name for key in ("conv", "pool", "dense", "flatten", "output"))
     ]
     layer_outputs = [model.get_layer(name).output for name in layer_names]
     activation_model = Model(inputs=model.layers[0].input, outputs=layer_outputs)
-    activations = activation_model.predict(img_arr)
+    activations = [img_arr] + activation_model.predict(img_arr)
 
     images = []
     for act in activations:
@@ -37,8 +37,12 @@ def visualize_activations(
             plt.figure(figsize=(0.4, 2))
             fmap = act[0].reshape(-1, 1)
             fmap = (fmap - fmap.min()) / (fmap.max() + 1e-6)
-            plt.imshow(fmap, cmap="gray", aspect="auto")
             num_units = fmap.shape[0]
+            max_display_units = 100
+            if num_units > max_display_units:
+                fmap = fmap[:max_display_units]
+                num_units = max_display_units
+            plt.imshow(fmap, cmap="gray", aspect="auto")
             for y in range(num_units):
                 if num_units <= 10:
                     plt.text(
