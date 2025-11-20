@@ -1,5 +1,7 @@
 # MNIST 手書き数字認識 Webアプリ
 
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Ty-Yuki/handwritten-digit-recognition/blob/main/handwritten_digit_recognition_colab.ipynb)
+
 このリポジトリは、FastAPI・TensorFlow・ngrokを用いた手書き数字認識Webアプリです。  
 ユーザーが描いた数字画像をCNNで認識し、中間層の活性化画像も可視化します。
 
@@ -50,34 +52,10 @@
 
 ## Google Colabでの実行方法
 
-1. **リポジトリのダウンロード**
-
-   ```python
-   !git clone https://github.com/Ty-Yuki/handwritten-digit-recognition.git
-   %cd handwritten-digit-recognition
-   ```
-
-2. **必要パッケージのインストール**
-
-   ```python
-   !pip install pyngrok
-   ```
-
-3. **ngrokトークンの設定**
-
-   ```python
-   import os
-   from pyngrok import ngrok
-
-   os.environ["NGROK_TOKEN"] = "あなたのngrokトークン"
-   ngrok.set_auth_token(os.environ["NGROK_TOKEN"])
-   ```
-
-4. **サーバーの起動**
-
-   ```python
-   !python main.py
-   ```
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Ty-Yuki/handwritten-digit-recognition/blob/main/handwritten_digit_recognition_colab.ipynb)
+1. 上記のリンク先に移動する。
+2. ファイル -> ドライブにコピーを保存 （**推奨**）
+3. 一番上のセルのTOKENに，あなたのngrokトークンを文字列として貼り付けて，全セルを実行する。
 
 ## 使い方
 
