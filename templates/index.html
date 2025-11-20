@@ -1,47 +1,185 @@
 <html>
+  <head>
+    <meta charset="utf-8" />
+    <title>手書き数字認識</title>
+    <style>
+      body {
+        font-family: 'Segoe UI', 'Helvetica Neue', Arial, 'sans-serif';
+        background: #f7f8fa;
+        margin: 0;
+        color: #222;
+      }
+      h1 {
+        margin-top: 32px;
+        margin-bottom: 24px;
+        font-size: 2.2em;
+        text-align: center;
+        font-weight: 600;
+        letter-spacing: 2px;
+      }
+      .container {
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        gap: 2vw;
+        width: 100vw;
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      .canvas-area {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+        padding: 24px;
+        width: 20vw;
+        min-width: 0;
+        margin-top: 0;
+        box-sizing: border-box;
+      }
+      .canvas-area label {
+        display: block;
+        font-size: 1.1em;
+        margin-bottom: 16px;
+        color: #555;
+        text-align: center;
+        font-weight: 500;
+      }
+      #canvas {
+        border: none;
+        background: #222;
+        border-radius: 12px;
+        box-shadow: 0 1px 6px rgba(0,0,0,0.08);
+        display: block;
+        margin: 0 auto 18px auto;
+        width: 100%;
+        max-width: 280px;
+        height: auto;
+      }
+      .btn-group {
+        text-align: center;
+        margin-bottom: 18px;
+      }
+      button {
+        font-size: 1.1em;
+        padding: 10px 1vw;
+        margin: 0;
+        border: none;
+        border-radius: 8px;
+        background: #4f8cff;
+        color: #fff;
+        font-weight: 500;
+        cursor: pointer;
+        box-shadow: 0 1px 4px rgba(79,140,255,0.08);
+        transition: background 0.2s;
+      }
+      button:hover {
+        background: #2563eb;
+      }
+      #result {
+        font-size: 2em;
+        margin: 22px 0 0 0;
+        text-align: center;
+        font-weight: 600;
+        color: #2563eb;
+      }
+      .right-area {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+        padding: 24px 40px 16px 40px;
+        width: 70vw;
+        min-width: 0;
+        margin-top: 0;
+        box-sizing: border-box;
+      }
+      .cnn-group {
+        background: #fff;
+        margin-bottom: 18px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-width: 0;
+      }
+      .cnn-img {
+        width: 100%;
+        margin-bottom: 18px;
+        display: block;
+        border-radius: 0;
+        box-shadow: none;
+      }
+      #activations {
+        display: flex;
+        align-items: center;
+        gap: 1vw;
+        margin-top: 0;
+        margin-left: 0;
+        overflow-x: auto;
+        width: 100%;
+        justify-content: center;
+      }
+      #activations img {
+        object-fit: contain;
+        border-radius: 0;
+        box-shadow: none;
+        background: none;
+        padding: 0;
+      }
+      .logo {
+        position: fixed;
+        right: 20px;
+        bottom: 20px;
+        width: 80px;
+        z-index: 100;
+        opacity: 0.85;
+        border-radius: 50%;
+        background: #fff;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+        padding: 8px;
+      }
+      @media (max-width: 900px) {
+        .container {
+          flex-direction: column;
+          align-items: center;
+          gap: 32px;
+        }
+        .right-area {
+          margin-left: 0;
+          margin-right: 0;
+        }
+        .cnn-group {
+          min-width: 0;
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
   <body>
-    <h1 style="margin-top:20px; margin-bottom:30px; font-size:2em; text-align:center;">
-      手書き数字認識
-    </h1>
-    <div style="display:flex; align-items:flex-start;">
+    <h1>手書き数字認識</h1>
+    <div class="container">
       <!-- 左側：手書きキャンバス -->
-      <div style="margin-left:40px; margin-top:100px;">
-        <div style="font-size:1.2em; margin-bottom:10px; color:#333; text-align:center;">
-          数字を書いてください (0～9)
-        </div>
+      <div class="canvas-area">
+        <label>数字を書いてください (0～9)</label>
         <canvas
           id="canvas"
           width="280"
           height="280"
-          style="border:2px solid black; margin-bottom:20px;"
         ></canvas>
-        <br />
-        <div style="text-align:center; margin-bottom:20px;">
-          <button
-            onclick="clearCanvas()"
-            style="font-size:1.2em; padding:10px 40px; margin-right:10px;"
-          >
-            消去
-          </button>
-          <button
-            onclick="sendImage()"
-            style="font-size:1.2em; padding:10px 40px;"
-          >
-            予測
-          </button>
+        <div class="btn-group">
+          <button onclick="clearCanvas()">消去</button>
+          <button onclick="sendImage()">予測</button>
         </div>
-        <div id="result" style="font-size:2em; margin:20px 0 0 0;"></div>
+        <div id="result"></div>
       </div>
-      <!-- 右側：CNN画像と活性化画像 -->
-      <div style="margin-left:100px; margin-right:100px; min-width:320px; max-width:80vw;">
-        <img
-          src="/static/cnn.png"
-          style="width:100%; max-width:1000px; margin-bottom:10px;"
-        />
-        <div
-          id="activations"
-          style="display:flex; align-items:center; margin-top:20px; margin-left:5px;"
-        ></div>
+      <!-- 右側：CNN画像と活性化画像を同じグループに -->
+      <div class="right-area">
+        <div class="cnn-group">
+          <img
+            src="/static/cnn.png"
+            class="cnn-img"
+          />
+          <div id="activations"></div>
+        </div>
       </div>
     </div>
     <script>
@@ -60,9 +198,15 @@
         ctx.beginPath();
       };
       canvas.onmouseup = e => (drawing = false);
+      canvas.onmouseleave = e => (drawing = false);
       canvas.onmousemove = e => {
         if (drawing) {
-          ctx.lineTo(e.offsetX, e.offsetY);
+          const rect = canvas.getBoundingClientRect();
+          const scaleX = canvas.width / rect.width;
+          const scaleY = canvas.height / rect.height;
+          const x = (e.clientX - rect.left) * scaleX;
+          const y = (e.clientY - rect.top) * scaleY;
+          ctx.lineTo(x, y);
           ctx.stroke();
         }
       };
@@ -71,6 +215,16 @@
         ctx.fillRect(0, 0, canvas.width, canvas.height);
       }
 
+      function syncActivationImgHeight() {
+        const cnnImg = document.querySelector('.cnn-img');
+        const activationImgs = document.querySelectorAll('#activations img');
+        if (cnnImg && activationImgs.length > 0) {
+          const height = cnnImg.clientWidth / 6 * 0.93;
+          activationImgs.forEach(img => {
+            img.style.height = height + 'px';
+          });
+        }
+      }
       async function sendImage() {
         const dataURL = canvas.toDataURL('image/png');
         const res = await fetch('/predict', {
@@ -81,24 +235,14 @@
         const result = await res.json();
         document.getElementById('result').innerHTML = '予測: ' + result.pred;
 
-        const cnnImg = document.querySelector('img[src="/static/cnn.png"]');
-        let cnnWidth = cnnImg ? cnnImg.clientWidth : 600;
-        let imgCount = result.activation_imgs.length;
-        let actImgHeight = Math.floor(cnnWidth / (imgCount - 1));
-        let margin = actImgHeight / (imgCount - 1) * 1.3
-
         let html = '';
-        for (let i = 0; i < imgCount; i++) {
-          const act = result.activation_imgs[i];
-          html += `<div style="text-align:center;">
-            <img src="data:image/png;base64,${act.img}" style="height:${actImgHeight}px; object-fit:contain;"/>
-          </div>`;
-          if (i < imgCount - 1) {
-            html += `<div style="width:${margin}px;"></div>`;
-          }
+        for (const act of result.activation_imgs) {
+          html += `<img src="data:image/png;base64,${act.img}" />`;
         }
         document.getElementById('activations').innerHTML = html;
+        syncActivationImgHeight();
       }
+      window.addEventListener('resize', syncActivationImgHeight);
 
       window.onload = () => {
         clearCanvas();
@@ -107,7 +251,7 @@
     </script>
     <img
       src="/static/logo.png"
-      style="position:fixed; right:20px; bottom:20px; width:100px; z-index:100;"
+      class="logo"
     />
   </body>
 </html>
